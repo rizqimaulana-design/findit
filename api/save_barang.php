@@ -17,6 +17,7 @@ $lokasi    = trim($_POST['lokasi']    ?? '');
 $tanggal   = $_POST['tanggal']   ?? date('Y-m-d');
 $pelapor   = trim($_POST['pelapor']   ?? 'Anonim');
 $kontak    = trim($_POST['kontak']    ?? '-');
+$user_id   = $_SESSION['user_id'] ?? null;
 
 if (empty($nama) || empty($lokasi)) {
     header('HTTP/1.1 303 See Other');
@@ -44,7 +45,6 @@ if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
         exit;
     }
 
-    // Buat nama file unik agar tidak bentrok
     $nama_foto = time() . '_' . uniqid() . '.' . $ext;
     $tujuan    = __DIR__ . '/../uploads/' . $nama_foto;
 
@@ -55,14 +55,15 @@ if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
     }
 }
 
-// Simpan ke database
+// Simpan ke database — sekarang include user_id
 $sql  = "INSERT INTO barang
-         (type, kategori, nama, deskripsi, foto, lokasi, tanggal, pelapor, kontak)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+         (type, kategori, nama, deskripsi, foto, lokasi, tanggal, pelapor, kontak, user_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("sssssssss",
+$stmt->bind_param("sssssssssi",
     $type, $kategori, $nama, $deskripsi,
-    $nama_foto, $lokasi, $tanggal, $pelapor, $kontak
+    $nama_foto, $lokasi, $tanggal, $pelapor, $kontak,
+    $user_id
 );
 
 if ($stmt->execute()) {
@@ -70,7 +71,7 @@ if ($stmt->execute()) {
 
     // Kirim notifikasi WA ke admin
     require_once '../config/whatsapp.php';
-    $no_admin = '0895323162288'; // Ganti dengan nomor WA admin
+    $no_admin = '0895323162288';
     $pesan    = pesanLaporanBaru($nama, $type, $lokasi, $pelapor);
     kirimWA($no_admin, $pesan);
 

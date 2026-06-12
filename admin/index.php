@@ -170,15 +170,12 @@ require_once '../includes/header.php';
                   </form>
                 <?php endif; ?>
 
-                <form method="POST" action="delete.php"
-                      style="display:inline"
-                      onsubmit="return confirm('Yakin hapus laporan ini?')">
-                  <input type="hidden" name="id"
-                         value="<?= $item['id'] ?>">
-                  <button type="submit" class="action-btn danger">
-                    🗑️ Hapus
-                  </button>
-                </form>
+                <!-- Tombol hapus → buka modal custom -->
+                <button type="button"
+                        class="action-btn danger"
+                        onclick="bukaModalHapus(<?= $item['id'] ?>, '<?= htmlspecialchars(addslashes($item['nama'])) ?>')">
+                  🗑️ Hapus
+                </button>
               </td>
 
             </tr>
@@ -189,6 +186,134 @@ require_once '../includes/header.php';
   </div>
 
 </div>
+
+<!-- ===== MODAL KONFIRMASI HAPUS ===== -->
+<div id="modalHapus"
+     onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-hapus-box">
+    <div class="modal-hapus-icon">🗑️</div>
+    <div class="modal-hapus-title">Hapus Laporan?</div>
+    <div class="modal-hapus-sub">
+      Laporan <strong id="modalNamaBarang"></strong> akan dihapus permanen dan tidak bisa dikembalikan.
+    </div>
+    <div class="modal-hapus-btns">
+      <button type="button"
+              class="modal-btn-batal"
+              onclick="document.getElementById('modalHapus').style.display='none'">
+        Batal
+      </button>
+      <form method="POST" action="delete.php" style="flex:1">
+        <input type="hidden" name="id" id="modalHapusId">
+        <button type="submit" class="modal-btn-hapus" style="width:100%">
+          🗑️ Ya, Hapus
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+#modalHapus {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+#modalHapus[style*="flex"],
+#modalHapus[style*="display:flex"],
+#modalHapus[style*="display: flex"] {
+  display: flex !important;
+}
+
+.modal-hapus-box {
+  background: #fff;
+  border-radius: 20px;
+  padding: 36px 32px 28px;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+  width: 340px;
+  max-width: 90vw;
+  animation: hapus-pop .22s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes hapus-pop {
+  from { transform: scale(.82); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.modal-hapus-icon {
+  width: 64px; height: 64px;
+  background: #FEF2F2;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  margin: 0 auto 16px;
+}
+
+.modal-hapus-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.modal-hapus-sub {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 24px;
+  line-height: 1.55;
+}
+
+.modal-hapus-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-btn-batal {
+  flex: 1;
+  padding: 10px 0;
+  border: 2px solid #E5E7EB;
+  border-radius: 10px;
+  background: #fff;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.modal-btn-batal:hover {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+}
+
+.modal-btn-hapus {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  border-radius: 10px;
+  background: #DC2626;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.modal-btn-hapus:hover { background: #B91C1C; }
+</style>
+
+<script>
+function bukaModalHapus(id, nama) {
+  document.getElementById('modalHapusId').value = id;
+  document.getElementById('modalNamaBarang').textContent = nama;
+  const modal = document.getElementById('modalHapus');
+  modal.style.display = 'flex';
+}
+</script>
 
 <?php
 $stmt->close();

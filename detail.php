@@ -2,6 +2,14 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once 'config/database.php';
 require_once 'config/base.php';
+
+// ── GUARD: harus login untuk melihat detail ──────────────────────────────
+if (!isset($_SESSION['user_id'])) {
+    header("Location: " . BASE_URL . "/auth/login.php?redirect=" . urlencode($_SERVER['REQUEST_URI']));
+    exit();
+}
+// ─────────────────────────────────────────────────────────────────────────
+
 require_once 'includes/header.php';
 
 $id      = isset($_GET['id']) ? (int)$_GET['id'] : 0;
